@@ -12,7 +12,7 @@ import SubscriptionsScreen from "../screens/DrawerScreens/SubscriptionsScreen";
 import HelpScreen from "../screens/DrawerScreens/HelpScreen";
 import OrderDetailsScreen from "../screens/DrawerScreens/OrderDetailsScreen";
 import PurchaseProduct from '../stripe/otherMethod/PurchaseProduct'
-import DrawerContent from "../screens/DrawerScreens/DrawerContent";
+import UserDrawerContent from "../screens/DrawerScreens/UserDrawerContent";
 // import ChangePasswordScreen from "../screens/DrawerScreens/ChangePasswordScreen";
 import NewOrderScreen from "../screens/DrawerScreens/NewOrderScreen";
 // import HomeStackNavigator from './HomeStackNavigator'
@@ -21,7 +21,7 @@ import AccountScreen from "../screens/DrawerScreens/AccountScreen";
 const Drawer = createDrawerNavigator();
 const DrawerNavigator = () => {
   return (
-    <Drawer.Navigator drawerContent={(props) => <DrawerContent {...props} />}>
+    <Drawer.Navigator drawerContent={(props) => <UserDrawerContent {...props} />}>
 
       <Drawer.Screen name="Home" component={HomeScreen} />
       <Drawer.Screen name="Account" component={AccountScreen} options={{unmountOnBlur:true}}/>

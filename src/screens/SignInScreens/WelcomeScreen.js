@@ -8,7 +8,7 @@ import {
   View,
   TouchableOpacity,
   Animated,
-  Image
+  Image,
 } from "react-native";
 import * as Animatable from "react-native-animatable";
 import Icon from "react-native-vector-icons/FontAwesome";
@@ -31,7 +31,7 @@ import { USERTYPES } from "../../components/Data/";
 const SIZE = FIELD_VALUE_FONT_SIZE * 1.3;
 
 const WelcomeScreen = (props) => {
-  const [email, setEmail] = useState("u1@gmail.com");      // has subscription
+  const [email, setEmail] = useState("u1@gmail.com"); // has subscription
   // const [email, setEmail] = useState("jcasasmail@gmail.com");    // no subscription
 
   const [password, setPassword] = useState("U11234!");
@@ -56,7 +56,25 @@ const WelcomeScreen = (props) => {
 
   const onAuthComplete = (props) => {
     if (props.token) {
-      props.navigation.navigate("drawer");
+      // console.log("props.user:  ", props.user);
+      const data = props.user;
+
+      if (!data.isDriver && !data.isWasher) {
+        console.log("navigating USER to drawer");
+        props.navigation.navigate("userDrawer");
+        return;
+        // user is a driver
+      } else if (data.isDriver) {
+        console.log("navigating DRIVER to DRIVER dashboard");
+        props.navigation.navigate("driverDrawer");
+        return;
+      } else {
+        // user is a washer
+        console.log("navigating WASHER to WASHER dashboard");
+        props.navigation.navigate("userDrawer");
+      }
+
+      // props.navigation.navigate("drawer");
     }
   };
 
@@ -95,112 +113,108 @@ const WelcomeScreen = (props) => {
         contentContainerStyle={KEYBOARD_AWARE_SCROLL_VIEW_STYLE}
         showsVerticalScrollIndicator={false}
       >
-         
         <View
           style={{ justifyContent: "center", alignItems: "center", flex: 1 }}
-        ><Animatable.View animation="zoomIn" iterationCount={1}>
-          <View
-            style={{
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            {/* <Loader /> */}
-            <Image
-            style={{
-              height: WIDTH * 0.25,
-              width: WIDTH * 0.9,
-              borderWidth: 0,
-            }}
-            source={require("../../assets/Launch_Logo.png")}
-          />
-          </View>
-          <Animated.View
-            style={{
-              opacity: fadeAnim,
-              alignItems: "center",
-            }}
-          >
-            <Text style={styles.animatedText}>Explore More. Stress Less</Text>
-          </Animated.View>
-
-          <Container>
-            <TouchableOpacity
-              onPress={modalButtonHelper}
-              style={[FIELD_VALUE_CONTAINER, { width: 65, marginBottom: 5 }]}
-            >
-              <Text>{userType}</Text>
-            </TouchableOpacity>
-            <MenuModal
-              title="Select User Type"
-              setCardTypeHelper={setUserHelper}
-              showModal={showModalUser}
-              modalView={userModalView}
-              data={USERTYPES}
-            />
-
+        >
+          <Animatable.View animation="zoomIn" iterationCount={1}>
             <View
-              style={[styles.container_Email_Password, { marginBottom: 5 }]}
-            >
-              <Icon
-                name="user"
-                color={"black"}
-                size={SIZE}
-                style={{ marginRight: 10 }}
-              />
-              <TextInput
-                value={email}
-                onChangeText={(email) => setEmail(email)}
-                placeholder=" Email"
-                style={[FIELD_VALUE_CONTAINER, { width: "80%" }]}
-              />
-            </View>
-
-            <View style={styles.container_Email_Password}>
-              <Icon
-                name="lock"
-                color={"black"}
-                size={SIZE}
-                style={{ marginRight: 10 }}
-              />
-              <TextInput
-                value={password}
-                onChangeText={(password) => setPassword(password)}
-                secureTextEntry={true}
-                placeholder=" Password"
-                style={[FIELD_VALUE_CONTAINER, { width: "80%" }]}
-              />
-            </View>
-          </Container>
-          <View style={styles.buttonsContainer}>
-            <BUTTON onPress={loginWithEmail} text="LOG IN" />
-            <BUTTON
-              onPress={() => props.navigation.navigate("signUpDetails")}
-              text="SIGN UP"
-            />
-
-            <TouchableOpacity
-              onPress={() => props.navigation.navigate("forgotPassword")}
-            >
-              <Text style={[BUTTON_TEXT, { color: "black" }]}>
-                Forgot Password?
-              </Text>
-            </TouchableOpacity>
-
-            {/* REMOVE ME */}
-
-            <TouchableOpacity
-              onPress={() => {
-                console.log(props.user);
+              style={{
+                justifyContent: "center",
+                alignItems: "center",
               }}
             >
-            </TouchableOpacity>
+              {/* <Loader /> */}
+              <Image
+                style={{
+                  height: WIDTH * 0.25,
+                  width: WIDTH * 0.9,
+                  borderWidth: 0,
+                }}
+                source={require("../../assets/Launch_Logo.png")}
+              />
+            </View>
+            <Animated.View
+              style={{
+                opacity: fadeAnim,
+                alignItems: "center",
+              }}
+            >
+              <Text style={styles.animatedText}>Explore More. Stress Less</Text>
+            </Animated.View>
 
-           
-          </View>
+            <Container>
+              <TouchableOpacity
+                onPress={modalButtonHelper}
+                style={[FIELD_VALUE_CONTAINER, { width: 65, marginBottom: 5 }]}
+              >
+                <Text>{userType}</Text>
+              </TouchableOpacity>
+              <MenuModal
+                title="Select User Type"
+                setCardTypeHelper={setUserHelper}
+                showModal={showModalUser}
+                modalView={userModalView}
+                data={USERTYPES}
+              />
+
+              <View
+                style={[styles.container_Email_Password, { marginBottom: 5 }]}
+              >
+                <Icon
+                  name="user"
+                  color={"black"}
+                  size={SIZE}
+                  style={{ marginRight: 10 }}
+                />
+                <TextInput
+                  value={email}
+                  onChangeText={(email) => setEmail(email)}
+                  placeholder=" Email"
+                  style={[FIELD_VALUE_CONTAINER, { width: "80%" }]}
+                />
+              </View>
+
+              <View style={styles.container_Email_Password}>
+                <Icon
+                  name="lock"
+                  color={"black"}
+                  size={SIZE}
+                  style={{ marginRight: 10 }}
+                />
+                <TextInput
+                  value={password}
+                  onChangeText={(password) => setPassword(password)}
+                  secureTextEntry={true}
+                  placeholder=" Password"
+                  style={[FIELD_VALUE_CONTAINER, { width: "80%" }]}
+                />
+              </View>
+            </Container>
+            <View style={styles.buttonsContainer}>
+              <BUTTON onPress={loginWithEmail} text="LOG IN" />
+              <BUTTON
+                onPress={() => props.navigation.navigate("signUpDetails")}
+                text="SIGN UP"
+              />
+
+              <TouchableOpacity
+                onPress={() => props.navigation.navigate("forgotPassword")}
+              >
+                <Text style={[BUTTON_TEXT, { color: "black" }]}>
+                  Forgot Password?
+                </Text>
+              </TouchableOpacity>
+
+              {/* REMOVE ME */}
+
+              <TouchableOpacity
+                onPress={() => {
+                  console.log(props.user);
+                }}
+              ></TouchableOpacity>
+            </View>
           </Animatable.View>
         </View>
-        
       </KeyboardAwareScrollView>
     </SafeAreaView>
   );

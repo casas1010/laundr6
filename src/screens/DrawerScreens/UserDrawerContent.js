@@ -18,7 +18,7 @@ import { connect } from "react-redux";
 
 import { FIELD_NAME_FONT_SIZE } from "../../components/Items";
 
-const DrawerContent = (props) => {
+const UserDrawerContent = (props) => {
   console.log('DrawerContent loading')
   const [color, setColor] = useState("#01c9e2");
   const [size, setSize] = useState(FIELD_NAME_FONT_SIZE * 1.2);
@@ -171,4 +171,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default connect(null, actions)(DrawerContent);
+export default connect(null, actions)(UserDrawerContent);

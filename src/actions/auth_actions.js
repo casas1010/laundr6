@@ -17,6 +17,37 @@ import { fetchOrders } from "../actions/history_actions";
 import { addSubscriptionInformation } from "./subscription_actions";
 import { BASE_URL } from "../key/";
 
+ const reDirectUser = (data, props) => {
+  console.log("reDirectUser()");
+  console.log("DATA:  ", data);
+  console.log("PROPS:   ", props);
+  // function redirects user based on what type of user the user is
+  // ex: user, driver, washer
+
+  // timeout is used for smooth transition
+
+  // user is a user
+  if (!data.isDriver && !data.isWasher) {
+    console.log("navigating USER to drawer");
+    props.navigation.navigate("userDrawer");
+    return;
+    // user is a driver
+  } else if (data.isDriver) {
+    console.log("navigating DRIVER to DRIVER dashboard");
+    props.navigation.navigate("driverDrawer");
+    return;
+  } else {
+    // user is a washer
+    console.log("navigating WASHER to WASHER dashboard");
+    props.navigation.navigate("userDrawer");
+  }
+
+  // setTimeout(() => {
+  //   console.log("navigating user to drawer");
+  //   props.navigation.navigate("drawer");
+  // }, 3000);
+};
+
 export const emailLogOut = (props) => async (dispatch) => {
   console.log("emailLogOut() action invoked");
 
@@ -78,9 +109,11 @@ export const doAuthLogin = (props) => async (dispatch) => {
         dispatch({ type: EMAIL_LOGIN_SUCCESS, payload: token });
 
         // redirect user to homepage
+
         setTimeout(() => {
-          console.log("navigating user to drawer");
-          props.navigation.navigate("drawer");
+          // console.log("navigating user to drawer");
+          // props.navigation.navigate("drawer");
+          reDirectUser(data, props);
         }, 3000);
 
         return;
@@ -155,9 +188,12 @@ export const doEmailLogin = (props) => async (dispatch) => {
         return;
       }
     } catch (error) {
-      
-      console.log(`Login failed, there has been an error in the request. error: ${error}`);
-      alert(`Login failed, there has been an error in the request. error: ${error}`);
+      console.log(
+        `Login failed, there has been an error in the request. error: ${error}`
+      );
+      alert(
+        `Login failed, there has been an error in the request. error: ${error}`
+      );
       console.log(error);
       dispatch({ type: EMAIL_LOGIN_FAIL });
       return;
