@@ -8,6 +8,7 @@
     "eject": "expo eject"
   },
   "dependencies": {
+    "@material-ui/core": "^4.11.2",
     "@react-native-community/datetimepicker": "3.0.0",
     "@react-navigation/bottom-tabs": "^5.10.2",
     "@react-navigation/drawer": "^5.10.2",
