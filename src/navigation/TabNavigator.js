@@ -2,15 +2,11 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import UserDrawerNavigator from "./UserDrawerNavigator";
 import DriverDrawerNavigator from "./DriverDrawerNavigator";
-
+import WasherDrawerNavigator from "./WasherDrawerNavigator";
 import AuthScreen from "../screens/SignInScreens/AuthScreen";
 import ForgotPasswordScreen from "../screens/SignInScreens/ForgotPasswordScreen";
 import SignUpDetailsScreen from "../screens/SignInScreens/SignUpDetailsScreen";
 import WelcomeScreen from "../screens/SignInScreens/WelcomeScreen";
-// import TestScreen from "../screens/DrawerScreens/TestScreen";
-import PurchaseProduct from "../stripe/otherMethod/PurchaseProduct";
-// import TestScreen from "../screens/DrawerScreens/NewOrderScreen";
-// FUTURE IMPROVEMENT: figure out how to hide all tab screens from Tab.Navigator   // https://reactnavigation.org/docs/bottom-tab-navigator/
 // NOTE: CHANGE INITIAL ROUTE
 
 const Tab = createBottomTabNavigator();
@@ -42,6 +38,11 @@ const BottomTabNavigator = ({ navigation }) => {
         options={{ tabBarVisible: false }}
         name="driverDrawer"
         component={DriverDrawerNavigator}
+      />
+      <Tab.Screen
+        options={{ tabBarVisible: false }}
+        name="washerDrawer"
+        component={WasherDrawerNavigator}
       />
       <Tab.Screen
         options={{ tabBarVisible: false }}

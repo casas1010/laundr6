@@ -39,7 +39,7 @@ import { BASE_URL } from "../key/";
   } else {
     // user is a washer
     console.log("navigating WASHER to WASHER dashboard");
-    props.navigation.navigate("userDrawer");
+    props.navigation.navigate("washerDrawer");
   }
 
   // setTimeout(() => {

@@ -9,15 +9,14 @@ import {
   FlatList,
   TouchableOpacity,
 } from "react-native";
-// import t from "prop-types";
 
 const WIDTH = Dimensions.get("window").width;
 const HEIGHT = Dimensions.get("window").height;
 const FONTSIZE = Math.floor((HEIGHT * 0.1) / 3);
 
-const MenuModal = (props) => {
+const EnterTextModal = (props) => {
   useEffect(() => {
-    console.log("Menu Modal loaded");
+    console.log("EnterTextModal loaded");
   }, []);
 
   return (
@@ -30,11 +29,14 @@ const MenuModal = (props) => {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
+          position: "relative",
         }}
       >
         <View
           style={{
+            position: "absolute",
             width: WIDTH * 0.8,
+            top:HEIGHT*.23,
             backgroundColor: "grey",
             margin: 20,
             borderRadius: 20,
@@ -43,39 +45,7 @@ const MenuModal = (props) => {
             padding: 15,
           }}
         >
-          <FlatList
-            data={props.data}
-            ListHeaderComponent={() => (
-              <Text style={{ fontWeight: "bold", textAlign: "center" }}>
-                {props.title}
-              </Text>
-            )}
-            ItemSeparatorComponent={() => (
-              <View
-                style={{
-                  height: 1,
-                  width: "100%",
-                  backgroundColor: "#01c9e2",
-                }}
-              />
-            )}
-            keyExtractor={(item) => item.value}
-            renderItem={({ item, index }) => {
-              return (
-                <TouchableOpacity
-                  onPress={() =>
-                    props.setCardTypeHelper(item.value)
-                  }
-                  // style={{ backgroundColor: "#ededed" }}
-                >
-                  <Text style={{ color: "black", padding: 20 }}>
-                    {item.value}
-                  </Text>
-                </TouchableOpacity>
-              );
-            }}
-          />
-          {/* {props.children} */}
+          {props.children}
         </View>
       </TouchableOpacity>
     </Modal>
@@ -98,4 +68,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MenuModal;
+export default EnterTextModal;

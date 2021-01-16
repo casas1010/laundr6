@@ -1,25 +1,14 @@
-/*
-code clean up 100% complete
-wire up actions
-
-add a link to the website for terms below the earn with laundr button  
-      make it very small font
-
-*/
-
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Text,Linking } from "react-native";
+import { View, StyleSheet, Text, Linking } from "react-native";
 import { DrawerContentScrollView, DrawerItem } from "@react-navigation/drawer";
 import Icon from "react-native-vector-icons/FontAwesome";
-// import { FontAwesome } from '@expo/vector-icons';
-//
 import * as actions from "../../actions";
 import { connect } from "react-redux";
 
 import { FIELD_NAME_FONT_SIZE } from "../../components/Items";
 
 const DriverDrawerContent = (props) => {
-  console.log('DrawerContent loading')
+  console.log("DrawerContent loading");
   const [color, setColor] = useState("#01c9e2");
   const [size, setSize] = useState(FIELD_NAME_FONT_SIZE * 1.2);
 
@@ -34,12 +23,26 @@ const DriverDrawerContent = (props) => {
           <View style={styles.drawerSection}>
             <DrawerItem
               icon={() => <Icon name="home" color={color} size={size} />}
-              label="Home"
+              label="Available Orders"
               onPress={() => {
-                props.navigation.navigate("Home");
+                props.navigation.navigate("Available Orders");
               }}
-              navigateToNewOrderScreen={ ()=> props.navigation.navigate("New Order Screen")}
+              // navigateToNewOrderScreen={() =>
+              //   props.navigation.navigate("New Order Screen")
+              // }
             />
+
+            <DrawerItem
+              icon={() => <Icon name="home" color={color} size={size} />}
+              label="Accepted Orders"
+              onPress={() => {
+                props.navigation.navigate("Accepted Orders");
+              }}
+              // navigateToNewOrderScreen={() =>
+              //   props.navigation.navigate("New Order Screen")
+              // }
+            />
+
             <DrawerItem
               icon={() => <Icon name="gear" color={color} size={size} />}
               label="Account"
@@ -54,13 +57,13 @@ const DriverDrawerContent = (props) => {
                 props.navigation.navigate("History");
               }}
             />
-            <DrawerItem
+            {/* <DrawerItem
               icon={() => <Icon name="bell" color={color} size={size} />}
               label="Notifications"
               onPress={() => {
                 props.navigation.navigate("Notifications");
               }}
-            />
+            /> */}
             <DrawerItem
               icon={() => <Icon name="users" color={color} size={size} />}
               label="Referrals"
@@ -75,13 +78,13 @@ const DriverDrawerContent = (props) => {
                 props.navigation.navigate("Payment");
               }}
             />
-            <DrawerItem
+            {/* <DrawerItem
               icon={() => <Icon name="paper-plane" color={color} size={size} />}
               label="Subscriptions"
               onPress={() => {
                 props.navigation.navigate("Subscriptions");
               }}
-            />
+            /> */}
             <DrawerItem
               icon={() => (
                 <View
@@ -102,8 +105,9 @@ const DriverDrawerContent = (props) => {
           </View>
         </View>
       </DrawerContentScrollView>
+
       <View style={styles.bottomDrawerSection}>
-        <DrawerItem
+        {/* <DrawerItem
           icon={() => <Icon name="money" color={"green"} size={size} />}
           label="Earn with Laundr"
           onPress={() => {
@@ -111,13 +115,13 @@ const DriverDrawerContent = (props) => {
             console.log(props);
             props.emailLogOut();
           }}
-        />
-       
+        /> */}
+
         <DrawerItem
           icon={() => <Icon name="legal" size={size} color="black" />}
           label="Terms of Service"
           onPress={() => {
-            Linking.openURL('https://www.laundr.io/termsofservice/')
+            Linking.openURL("https://www.laundr.io/termsofservice/");
           }}
         />
       </View>
