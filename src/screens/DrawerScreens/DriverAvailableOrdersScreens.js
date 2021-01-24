@@ -33,6 +33,10 @@ const BUTTON_WIDTH = SCREEN_WIDTH * 0.3;
 const SearchScreen = (props) => {
   const [term, setTerm] = useState("");
   const [DATA, SETDATA] = useState([]);
+  const [response, setResponse] = useState({
+    success: "",
+    message: "",
+  });
 
   useEffect(() => {
     console.log("SearchScreen");
@@ -51,7 +55,7 @@ const SearchScreen = (props) => {
       });
 
       if (response.data.success) {
-        console.log("response.data.message:  ",response.data.message);
+        console.log("response.data.message:  ", response.data.message);
 
         data = modifyData(response.data.message);
 
@@ -126,11 +130,9 @@ const SearchScreen = (props) => {
     );
   };
 
-  const submitOrder= async(order)=>{
-    console.log('submitOrder()');
-
+  const submitOrder = async (order) => {
+    console.log("submitOrder()");
     const userData = props.user;
-
     try {
       const orderID = order.orderInfo.orderID;
       const response = await axios.put(
@@ -140,22 +142,20 @@ const SearchScreen = (props) => {
           orderID,
         }
       );
-      console.log("success");
-      return { success: response.data.success, message: response.data.message };
+
+      if (response.data.success) {
+        console.log("success");
+        fetchData();
+        
+      } else {   
+        console.log('response.data.message: ',response.data.message)
+        alert(response.data.message)
+      }
     } catch (error) {
       console.log("accepting order", error);
       alert(error);
-      return {
-        success: false,
-        message: caughtError("accepting order", error, 99),
-      };
     }
-  }
-
-
-
-
-
+  };
 
   const displayPreferences = (item) => {
     const preferencesArray = [

@@ -1,6 +1,7 @@
 // ADD PIN TO LOCATION
 import { connect } from "react-redux";
 import React, { useEffect, useState } from "react";
+import { BASE_URL } from "../../key";
 import {
   FlatList,
   StyleSheet,
@@ -14,33 +15,29 @@ import { AntDesign } from "@expo/vector-icons";
 import { BUTTON } from "../../components/Items/";
 import MapView, { Marker } from "react-native-maps";
 import { Entypo } from "@expo/vector-icons";
+import axios from "axios";
 
 import {
   getLatLongFromAddress,
   verifyAddressIsInBounds,
 } from "../../components/LocationHelperFunctions";
 import Container from "../../components/Container";
-import {
-  HEIGHT,
-  WIDTH,
-  SHADOW,
-} from "../../components/Items/";
+import { HEIGHT, WIDTH, SHADOW } from "../../components/Items/";
 import { GOOGLE_MAPS_KEY } from "../../key/";
 import SearchBar from "../../components/SearchBar";
 import LoaderModal from "../../components/LoaderModal";
 
 let acTimeout;
 const HomeScreen = (props) => {
-
   const [loading, setLoading] = useState(false);
 
   const [initialRegion, setInitialRegion] = useState(undefined);
-  const [newRegion, setNewRegion] = useState(
-
-  );
+  const [newRegion, setNewRegion] = useState();
 
   const [userAddress, setUserAddress] = useState();
-  const [pickedAddressFromDropDown, setPickedAddressFromDropDown] = useState('');
+  const [pickedAddressFromDropDown, setPickedAddressFromDropDown] = useState(
+    ""
+  );
   const [address, setAddress] = useState();
   const [
     autoCompletePossibleLocations,
@@ -59,7 +56,7 @@ const HomeScreen = (props) => {
     setUserAddress(userLocation);
     console.log("setting address state variable");
     setAddress(userLocation);
-    setPickedAddressFromDropDown(userLocation || '')
+    setPickedAddressFromDropDown(userLocation || "");
     console.log("setUserLocation() complete");
   };
   function goToInitialLocation() {
@@ -105,7 +102,6 @@ const HomeScreen = (props) => {
       return;
     }
 
-
     console.log("initiating API call for address:  ", address);
     let possibleLocations = [];
     let sanitizedAddress = address.replace(/ /g, "+");
@@ -128,7 +124,10 @@ const HomeScreen = (props) => {
     //   array: [...possibleLocations],
     // };
     // setAutoCompletePossibleLocations(obj);
-    setAutoCompletePossibleLocations({...autoCompletePossibleLocations,array:[...possibleLocations]});
+    setAutoCompletePossibleLocations({
+      ...autoCompletePossibleLocations,
+      array: [...possibleLocations],
+    });
   };
 
   const setNewRegionHelper = async (adr) => {
@@ -147,22 +146,54 @@ const HomeScreen = (props) => {
     setNewRegion(_newRegion);
   };
 
+  const checkCurrentOrders = async () => {
+    console.log("checkCurrentOrders()");
+
+    let data = [];
+    const userData = props.user;
+    let response;
+    console.log('userData.email:  ',userData.email)
+    try {
+      response = await axios.post(BASE_URL + "/api/order/getExistingOrder", {
+      
+          email: userData.email,
+        
+      });
+
+
+      // if (response.data.success) {
+      //   console.log("response.data.message:  ", response.data.message);
+      // } else {
+      //   alert(response.data.message);
+      // }
+    } catch (error) {
+      // alert(response.data.message);
+      console.log("fetching orders error", error);
+    }
+  };
+
   const newOrder = async () => {
+    checkCurrentOrders();
+    return;
+
     console.log("newOrder() initiated");
-    console.log('pickedAddressFromDropDown:  ',pickedAddressFromDropDown)
-    if(pickedAddressFromDropDown==='' ||pickedAddressFromDropDown!==address ){
-      alert("Please enter an address, then pick a suggested address from the dropdown");
+    console.log("pickedAddressFromDropDown:  ", pickedAddressFromDropDown);
+    if (
+      pickedAddressFromDropDown === "" ||
+      pickedAddressFromDropDown !== address
+    ) {
+      alert(
+        "Please enter an address, then pick a suggested address from the dropdown"
+      );
       console.log("exiting newOrder()");
-      return
+      return;
     }
     const location = await getLatLongFromAddress(pickedAddressFromDropDown);
-
 
     const addressVerificatioBoolean = await verifyAddressIsInBounds(location);
 
     console.log("addressVerificatioBoolean:   ", addressVerificatioBoolean);
     if (!addressVerificatioBoolean) {
-      
       console.log("user is out of range");
       alert(
         `Sorry!  You are currently out of Lanndr' active service area. Visit the site to request Landr at your location`
@@ -171,7 +202,10 @@ const HomeScreen = (props) => {
     }
 
     console.log("user is in range!");
-    props.navigation.navigate("New Order Screen", { address: pickedAddressFromDropDown, location });
+    props.navigation.navigate("New Order Screen", {
+      address: pickedAddressFromDropDown,
+      location,
+    });
   };
 
   const displayAutoCompletePossibleLocations = () => {
@@ -192,7 +226,7 @@ const HomeScreen = (props) => {
               onPress={() => {
                 console.log(`item pressed:   ${item}`);
                 setAddress(item);
-                setPickedAddressFromDropDown(item)
+                setPickedAddressFromDropDown(item);
                 setAutoCompletePossibleLocations({ display: false, array: [] });
                 setNewRegionHelper(item);
               }}
@@ -243,36 +277,33 @@ const HomeScreen = (props) => {
       </MapView>
 
       <View style={styles.topInputs_ButtonContainer}>
-        
-          <TouchableOpacity onPress={props.navigation.openDrawer}>
-            <Entypo
-              name="menu"
-              size={50}
-              color="#01c9e2"
-              style={{ marginLeft: 10 }}
-            />
-          </TouchableOpacity>
-
-          <SearchBar
-            term={address}
-            onTermChange={(txt_address) => {
-              setAutoCompletePossibleLocations({
-                ...autoCompletePossibleLocations,
-                display: true,
-              });
-              setAddress(txt_address);
-            }}
-            placeholder="Search Locations"
-            onFocus={searchBarOnFocus}
-            clear={()=>{
-              setAddress(''); 
-              setPickedAddressFromDropDown('')
-
-            }}
+        <TouchableOpacity onPress={props.navigation.openDrawer}>
+          <Entypo
+            name="menu"
+            size={50}
+            color="#01c9e2"
+            style={{ marginLeft: 10 }}
           />
+        </TouchableOpacity>
 
-          {displayAutoCompletePossibleLocations()}
-        
+        <SearchBar
+          term={address}
+          onTermChange={(txt_address) => {
+            setAutoCompletePossibleLocations({
+              ...autoCompletePossibleLocations,
+              display: true,
+            });
+            setAddress(txt_address);
+          }}
+          placeholder="Search Locations"
+          onFocus={searchBarOnFocus}
+          clear={() => {
+            setAddress("");
+            setPickedAddressFromDropDown("");
+          }}
+        />
+
+        {displayAutoCompletePossibleLocations()}
       </View>
 
       <View style={styles.bottomButtonsContainer}>
@@ -381,8 +412,8 @@ const styles = StyleSheet.create({
   },
 });
 
-function mapStateToProps({ location, payment }) {
-  return { location, payment };
+function mapStateToProps({ location, payment, user }) {
+  return { location, payment, user };
 }
 // export default HomeScreen;
 export default connect(mapStateToProps)(HomeScreen);

@@ -41,6 +41,16 @@ const SearchScreen = (props) => {
   const [term, setTerm] = useState("");
   const [DATA, SETDATA] = useState([]);
   const [weight, setWeight] = useState("");
+  const [errorData, setErrorData] = useState({
+    error: false,
+    message: "sample error",
+  });
+  const [responseObj, setResponseObj] = useState({
+    success: null,
+    message: "",
+  });
+
+  // { success: response.data.success, message: response.data.message }
 
   const [userModalView, setUserModalView] = useState(false);
 
@@ -127,64 +137,10 @@ const SearchScreen = (props) => {
     }
   };
 
-  const acceptOrder = async (order) => {
-    console.log("handlePickupAccept()");
-    console.log(order.userInfo.fname);
-    setUserModalView(!userModalView);
-
-    // Alert.alert(
-    //   "Enter Weigth",
-    //   `Please enter the weight, in pounds, of the order from: ${order.userInfo.fname} ${order.userInfo.lname}`,
-    //   [
-    //     {
-    //       text: "Cancel",
-    //       onPress: () => console.log("Cancel Pressed"),
-    //       style: "cancel",
-    //     },
-    //     { text: "OK", onPress: () => console.log("OK Pressed") },
-    //   ]
-    // );
-
-    // Alert.alert(
-    //   `Please enter the weight, in pounds, of the order from: `,
-
-    //   [
-    //     {
-    //       text: "Ask me later",
-    //       onPress: () => console.log("Ask me later pressed"),
-    //     },
-    //     {
-    //       text: "Cancel",
-    //       onPress: () => console.log("Cancel Pressed"),
-    //       style: "cancel",
-    //     },
-    //     { text: "OK", onPress: () => console.log("OK Pressed") },
-    //   ],
-    //   { cancelable: false }
-    // );
-
-    // const userData = props.user;
-
-    // try {
-    //   const orderID = order.orderInfo.orderID;
-    //   const response = await axios.put(
-    //     BASE_URL + "/api/driver/assignOrderPickup",
-    //     {
-    //       driverEmail: userData.email,
-    //       orderID,
-    //     }
-    //   );
-    //   console.log("success");
-    //   return { success: response.data.success, message: response.data.message };
-    // } catch (error) {
-    //   console.log("accepting order", error);
-    //   alert(error);
-    //   return {
-    //     success: false,
-    //     message: caughtError("accepting order", error, 99),
-    //   };
-    // }
+  const case4Function = () => {
+    console.log("case4Function()");
   };
+
 
   const displayPreferences = (item) => {
     const preferencesArray = [
@@ -220,43 +176,259 @@ const SearchScreen = (props) => {
     }
   };
 
-  const confirmButton = (item) => {
+  const handleUpdateWeight = async (order) => {
+    if (!checkMinimumWeight(weight)) {
+      return;
+    }
+
+    try {
+      const orderID = order.orderInfo.orderID;
+      const response = await axios.put(
+        BASE_URL + "/api/driver/updateOrderWeight",
+        {
+          weight: weight,
+          orderID,
+        }
+      );
+      if (response.data.success) {
+        console.log("success");
+        fetchData();
+        setUserModalView(!userModalView);
+      } else {
+        console.log("response.data.message: ", response.data.message);
+        alert(response.data.message);
+      }
+    } catch (error) {
+      alert(response.data.message);
+      console.log("ERROR: ", error);
+    }
+  };
+
+  const confirmWeightButton = (item) => {
     if (weight !== "") {
       return (
         <BUTTON
           text="Confirm"
           style={{ backgroundColor: "#ffb600" }}
           onPress={() => {
-            acceptOrder(item);
+            handleUpdateWeight(item);
           }}
         />
       );
     }
   };
 
+  const warningMessage = () => {
+    if (errorData.error) {
+      return <Text>{errorData.message}</Text>;
+    }
+  };
+
+  const handleUserReceived = async (order) => {
+    // console.log('ORDER::',order)
+    // let order = order;
+    try {
+      const orderID = order.orderInfo.orderID;
+
+      const response = await axios.put(
+        BASE_URL + "/api/driver/setUserDelivered",
+        {
+          orderID,
+        }
+      );
+      console.log("RESPONSE: ", response);
+
+      // return { success: response.data.success, message: response.data.message };
+    } catch (error) {
+      console.log("ERROR", error);
+    }
+  };
+
   const confirmStageButtonText = (item) => {
     switch (renderStage(item.orderInfo.status)) {
-      case "Washer Dropoff":
-        return "Washer Dropoff";
+      case "User Pickup": // case 0
+        return "?case 0";
 
-      case "Weighing":
-        return "Enter Weigth";
-      //   break;
-      // default:
-      // // code block
+      case "Weighing": // case 1
+        return "ENTER WEIGHT";
+
+      case "Washer Dropoff": // case 2
+        return "DELIVERED TO WASHER";
+
+      case "Washer Pickup": // case 3
+        return "?case 3";
+
+      case "Dropoff": // case 4
+        return "Delivered to User";
+    }
+  };
+
+  const handleWasherReceived = async (order) => {
+ 
+    try {
+      const orderID = order.orderInfo.orderID;
+      const userData = props.user;
+      const response = await axios.put(
+        BASE_URL + "/api/driver/setWasherDelivered",
+        {
+          driverEmail: userData.email,
+          orderID,
+        }
+      );
+
+      if (response.data.success) {
+        console.log("success");
+        fetchData();
+      } else {
+        console.log("response.data.message: ", response.data.message);
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.log("accepting order", error);
+      alert(error);
+    }
+  };
+
+  const returnModalComponents = (item) => {
+    switch (renderStage(item.orderInfo.status)) {
+      case "User Pickup": // case 0
+        return <></>;
+
+      case "Weighing": // case 1
+        return (
+          <>
+            <Text style={[FIELD_NAME_TEXT]}>
+              Please enter the weight, in pounds, of the order from:{" "}
+            </Text>
+            <Text style={[FIELD_NAME_TEXT, { textAlign: "center" }]}>
+              {item.userInfo.fname} {item.userInfo.lname}
+            </Text>
+            <View
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <TextInput
+                value={weight}
+                keyboardType="decimal-pad"
+                onChangeText={(txt) => {
+                  checkWeigthInputForValidity(txt);
+                  setWeight(txt);
+                }}
+                placeholder="enter weight in lbs"
+                maxLength={4}
+                style={{
+                  textAlign: "center",
+                  backgroundColor: "white",
+                  width: "80%",
+                  marginTop: 10,
+                  borderRadius: 15,
+                  padding: 10,
+                }}
+              />
+              {warningMessage()}
+              {confirmWeightButton(item)}
+            </View>
+          </>
+        );
+
+      case "Washer Dropoff": // case 2
+        return (
+          <>
+            <Text style={[FIELD_NAME_TEXT]}>
+              Please confirm that you have delivered the order to the washer.
+            </Text>
+            <BUTTON
+              text="CONFIRM"
+              style={{ backgroundColor: "#ffb600" }}
+              onPress={() => {
+                handleWasherReceived(item);
+              }}
+            />
+            <BUTTON
+              text="CANCEL"
+              style={{ backgroundColor: "#5bcae2" }}
+              onPress={() => {
+                setUserModalView(!userModalView);
+              }}
+            />
+          </>
+        );
+
+      case "Washer Pickup": // case 3
+        return <></>;
+
+      case "Dropoff": // case 4
+        return (
+          <>
+            <Text style={[FIELD_NAME_TEXT, { textAlign: "center" }]}>
+              Please confirm that you have delivered the order to:
+            </Text>
+            <Text style={[FIELD_NAME_TEXT, { textAlign: "center" }]}>
+              {item.userInfo.fname} {item.userInfo.lname}
+            </Text>
+            <View
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <BUTTON
+                text="CONFIRM"
+                style={{ backgroundColor: "#ffb600" }}
+                onPress={() => {
+                  handleUserReceived(item);
+                }}
+              />
+              <BUTTON
+                text="CANCEL"
+                style={{ backgroundColor: "#5bcae2" }}
+                onPress={() => {
+                  setUserModalView(!userModalView);
+                }}
+              />
+            </View>
+          </>
+        );
     }
   };
 
   const checkWeigthInputForValidity = (txt) => {
-    // verify that the weight inputed is not empty and that it does not contain more
-    // than 1 period
+    // verify that weight only contains 1 period
+    // verify that the weight is at least 10 lbs
     const indices = [];
     for (let i = 0; i < txt.length; i++) {
       if (txt[i] === ".") indices.push(i);
     }
-    if (indices.length > 1 || txt.length == 0) {
+    if (indices.length > 1) {
+      setErrorData({
+        error: true,
+        message: "too many periods cutie;)",
+      });
+    } else {
+      setErrorData({
+        error: false,
+        message: "",
+      });
+    }
+  };
+
+  const checkMinimumWeight = (txt) => {
+    // console.log(txt > 10)
+    if (txt < 10) {
+      setErrorData({
+        error: true,
+        message: "Minimum weight to be entered is 10 lbs best friend;)",
+      });
       return false;
     } else {
+      setErrorData({
+        error: false,
+        message: "",
+      });
       return true;
     }
   };
@@ -516,7 +688,7 @@ const SearchScreen = (props) => {
                       text={confirmStageButtonText(item)}
                       style={{ backgroundColor: "#ffb600" }}
                       onPress={() => {
-                        acceptOrder(item);
+                        setUserModalView(!userModalView);
                       }}
                     />
 
@@ -526,35 +698,7 @@ const SearchScreen = (props) => {
                       showModal={showModalUser}
                       modalView={userModalView}
                     >
-                      <Text style={[FIELD_NAME_TEXT]}>
-                        Please enter the weight, in pounds, of the order from:{" "}
-                        {item.userInfo.fname} {item.userInfo.lname}
-                      </Text>
-                      <View
-                        style={{
-                          display: "flex",
-                          justifyContent: "center",
-                          alignItems: "center",
-                        }}
-                      >
-                        <TextInput
-                          value={weight}
-                          keyboardType="decimal-pad"
-                          onChangeText={(txt) => setWeight(txt)}
-                          placeholder="enter weight"
-                          maxLength={4}
-                          style={{
-                            textAlign: "center",
-                            backgroundColor: "white",
-                            width: "50%",
-                            marginTop: 10,
-                            borderRadius: 15,
-                            padding: 10,
-                          }}
-                        />
-
-                        {confirmButton(item)}
-                      </View>
+                      {returnModalComponents(item)}
                     </EnterTextModal>
                   </View>
                   {/*  */}
