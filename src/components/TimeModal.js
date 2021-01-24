@@ -36,7 +36,7 @@ const TimeModal = (props) => {
         <View
           style={{
             position:'absolute',
-            bottom:0,
+            // bottom:0,
             width: WIDTH * 0.8,
             backgroundColor: "grey",
             margin: 20,

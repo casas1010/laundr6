@@ -590,7 +590,7 @@ const SearchScreen = (props) => {
                     </View>
                     <View style={styles.fieldValueContainer}>
                       <Text style={styles.fieldValueTxT}>
-                        {`${item.orderInfo.weight}`}
+                        {item.orderInfo.weight}
                       </Text>
                     </View>
                   </View>

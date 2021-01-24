@@ -1,6 +1,9 @@
 // ADD PIN TO LOCATION
 import { connect } from "react-redux";
 import React, { useEffect, useState } from "react";
+import TimeModal from "../../components/TimeModal";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import moment from "moment";
 import { BASE_URL } from "../../key";
 import {
   FlatList,
@@ -10,6 +13,7 @@ import {
   TouchableOpacity,
   Linking,
   Dimensions,
+  SafeAreaView,
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import { BUTTON } from "../../components/Items/";
@@ -17,19 +21,171 @@ import MapView, { Marker } from "react-native-maps";
 import { Entypo } from "@expo/vector-icons";
 import axios from "axios";
 
+import GlobalStyles from "../../components/GlobalStyles";
 import {
   getLatLongFromAddress,
   verifyAddressIsInBounds,
 } from "../../components/LocationHelperFunctions";
 import Container from "../../components/Container";
-import { HEIGHT, WIDTH, SHADOW } from "../../components/Items/";
+import {
+  HEIGHT,
+  WIDTH,
+  SHADOW,
+  DIVIDER,
+  FIELD_NAME_TEXT,
+} from "../../components/Items/";
 import { GOOGLE_MAPS_KEY } from "../../key/";
 import SearchBar from "../../components/SearchBar";
 import LoaderModal from "../../components/LoaderModal";
 
 let acTimeout;
+const TODAYS_DATE = new Date();
+var DAY_NUMBER = TODAYS_DATE.getDay();
+
+var DATE = TODAYS_DATE.getDate();
+var MONTH = TODAYS_DATE.getMonth() + 1;
+var HOUR = TODAYS_DATE.getHours(); //To get the Current Hours
+var MINUTE = TODAYS_DATE.getMinutes();
+
 const HomeScreen = (props) => {
-  const [loading, setLoading] = useState(false);
+  // date picker
+  const [pickUpDate, setPickUpDate] = useState({ month: MONTH, date: DATE });
+  const [displayTime, setDisplayTime] = useState({
+    hour: 12,
+    minute: "00",
+    m: "pm",
+    allowed: true,
+  });
+  const [userModalView, setUserModalView] = useState(true);
+  const [date, setDate] = useState(new Date("May 24, 1992 12:00:00")); // Random 0 reference point
+  useEffect(() => {
+    onTimeChange();
+  }, [pickUpDate]);
+
+  const setDay = (dateDetails) => {
+    console.log("setDate()");
+    console.log("date set for laundry:  ", dateDetails);
+    setPickUpDate(dateDetails);
+  };
+
+  const getDayValueFromNumber = (DAY_NUMBER) => {
+    switch (DAY_NUMBER) {
+      case 0:
+        return "Sunday";
+      case 1:
+        return "Monday";
+      case 2:
+        return "Tuesday";
+      case 3:
+        return "Wednesday";
+      case 4:
+        return "Thursday";
+      case 5:
+        return "Friday";
+      case 6:
+        return "Saturday";
+      case 7:
+        return "Sunday";
+    }
+  };
+
+  const onTimeChange = (event, selectedDate) => {
+    const currentDate = selectedDate || date;
+    setDate(currentDate);
+    const str = JSON.stringify(currentDate);
+
+    var time = {
+      hour: str.slice(12, 14),
+      minute: str.slice(15, 17),
+      allowed: true,
+    };
+
+    // the following code {} only changes the time format
+    {
+      console.log("hour before modification:  ", parseInt(time.hour));
+      if (3 >= parseInt(time.hour) && parseInt(time.hour) >= 0) {
+        // 8 => 10 pm
+        console.log("hour modification case1");
+        time.hour = parseInt(time.hour) + 8;
+        time.allowed = false;
+        time.m = "pm";
+      } else if (4 == parseInt(time.hour)) {
+        console.log("hour modification case2");
+        time.hour = parseInt(time.hour) + 8;
+        time.m = "am";
+        time.allowed = false;
+      } else if (15 >= parseInt(time.hour) && parseInt(time.hour) >= 4) {
+        console.log("hour modification case3");
+        time.m = "am";
+        time.allowed = false;
+        if (parseInt(time.hour) >= 14) {
+          console.log("hour modification case3.1");
+          time.allowed = true;
+        }
+        time.hour = parseInt(time.hour) - 4;
+      } else if (parseInt(time.hour) == 16) {
+        //edge case, setting to 12 pm
+        console.log("hour modification case4");
+        time.m = "pm";
+        time.hour = 12;
+      } else if (parseInt(time.hour) > 16) {
+        console.log("hour modification case5");
+        time.m = "pm";
+        time.hour = parseInt(time.hour) - 16;
+        time.allowed = true;
+        if (parseInt(time.hour) >= 24) {
+          console.log(" hour modification case5.1");
+          time.allowed = false;
+        }
+      }
+      console.log("hour after modification:  ", parseInt(time.hour));
+    }
+
+    setDisplayTime(time);
+    let dayDifference = pickUpDate.date - DATE;
+    console.log("dayDifference::", dayDifference);
+    if (dayDifference == 1) {
+      setDisplayTime(time);
+      return;
+    }
+    // if the code has made it this far, it means that the user wants their laundry
+    // cleaned today.
+    // the code below changes the format to 24 hours, then takes the difference in minutes
+    {
+      const current24Time = moment().format("HH:mm:ss");
+      const current24TimeHour = current24Time.slice(0, 2);
+      const currentMinute = current24Time.slice(3, 5);
+
+      let displayHourin24 = time.hour;
+      if (time.m == "pm" && displayHourin24 < 12) {
+        displayHourin24 = parseInt(displayHourin24) + 12;
+      }
+      console.log("displayHourin24:  ", displayHourin24);
+      const displayTotalMinute =
+        parseInt(displayHourin24) * 60 + parseInt(time.minute);
+      console.log("displayTotalMinute:  ", displayTotalMinute);
+      const currentTotalMinute =
+        parseInt(current24TimeHour) * 60 + parseInt(currentMinute);
+      console.log("currentTotalMinute:  ", currentTotalMinute);
+      const minuteDifference = displayTotalMinute - currentTotalMinute;
+      console.log("MINUTE DIFFERENCE:  ", minuteDifference);
+      if (minuteDifference < 60) {
+        console.log("minute differnece is less than 60");
+        time.allowed = false;
+        setDisplayTime(time);
+        return;
+      }
+    }
+  };
+
+  const showModalUser = () => {
+    console.log("showModalUser()");
+    setUserModalView(!userModalView);
+  };
+
+  // date picker
+
+  const [pendingOrder, setPendingOrder] = useState(null);
 
   const [initialRegion, setInitialRegion] = useState(undefined);
   const [newRegion, setNewRegion] = useState();
@@ -38,6 +194,7 @@ const HomeScreen = (props) => {
   const [pickedAddressFromDropDown, setPickedAddressFromDropDown] = useState(
     ""
   );
+
   const [address, setAddress] = useState();
   const [
     autoCompletePossibleLocations,
@@ -48,6 +205,7 @@ const HomeScreen = (props) => {
   useEffect(() => {
     console.log("useEffect() HomeScreen []");
     setUserLocation();
+    checkCurrentOrders();
   }, []);
   const setUserLocation = async () => {
     console.log("setUserLocation() initiated");
@@ -149,23 +307,24 @@ const HomeScreen = (props) => {
   const checkCurrentOrders = async () => {
     console.log("checkCurrentOrders()");
 
-    let data = [];
     const userData = props.user;
     let response;
-    console.log('userData.email:  ',userData.email)
+
     try {
-      response = await axios.post(BASE_URL + "/api/order/getExistingOrder", {
-      
+      response = await axios.get(BASE_URL + "/api/order/getExistingOrder", {
+        params: {
           email: userData.email,
-        
+        },
       });
 
-
-      // if (response.data.success) {
-      //   console.log("response.data.message:  ", response.data.message);
-      // } else {
-      //   alert(response.data.message);
-      // }
+      if (response.data.message != "N/A") {
+        console.log("HERE:  ", response.data.message);
+        setPendingOrder(response.data.message);
+        return true;
+      } else {
+        // alert(response.data.message);
+        return false;
+      }
     } catch (error) {
       // alert(response.data.message);
       console.log("fetching orders error", error);
@@ -173,11 +332,8 @@ const HomeScreen = (props) => {
   };
 
   const newOrder = async () => {
-    checkCurrentOrders();
-    return;
-
     console.log("newOrder() initiated");
-    console.log("pickedAddressFromDropDown:  ", pickedAddressFromDropDown);
+
     if (
       pickedAddressFromDropDown === "" ||
       pickedAddressFromDropDown !== address
@@ -261,9 +417,37 @@ const HomeScreen = (props) => {
     return <Text>Add Card</Text>;
   };
 
-  return (
+  const handleWasherReceived = async (order) => {
+    try {
+      const orderID = order.orderInfo.orderID;
+
+      const response = await axios.put("/api/driver/setWasherDelivered", {
+        orderID,
+      });
+
+      return { success: response.data.success, message: response.data.message };
+    } catch (error) {
+      showConsoleError("setting order as received by washer", error);
+      return {
+        success: false,
+        message: caughtError("setting order as received by washer", error, 99),
+      };
+    }
+  };
+
+  const newOrderOrShowCurrentOrder = () => {
+    console.log("newOrderOrShowCurrentOrder()");
+    console.log(pendingOrder);
+    if (pendingOrder == null) {
+      newOrder();
+    }
+  };
+
+  // if there is a pending order, return the pending order info.
+  // Otherwise return the map.
+  return pendingOrder == null ? (
     <View style={styles.container}>
-      <LoaderModal loading={loading} />
+      {/* <LoaderModal loading={loading} /> */}
       <MapView
         style={styles.mapStyle}
         region={newRegion}
@@ -307,7 +491,7 @@ const HomeScreen = (props) => {
       </View>
 
       <View style={styles.bottomButtonsContainer}>
-        <BUTTON onPress={newOrder} text="New Order" />
+        <BUTTON onPress={newOrderOrShowCurrentOrder} text="New Order" />
         <View style={styles.bottomInnerButtonsContainer}>
           <BUTTON
             onPress={() => {
@@ -330,6 +514,269 @@ const HomeScreen = (props) => {
 
       {/* </KeyboardAwareScrollView> */}
     </View>
+  ) : (
+    <SafeAreaView style={GlobalStyles.droidSafeArea}>
+      <Container style={{ padding: 0, position: "relative" }}>
+        {/*  */}
+        <View
+          style={[
+            styles.fieldContainer,
+            {
+              backgroundColor: "#5bcae2",
+              borderTopEndRadius: 15,
+              borderTopStartRadius: 15,
+              paddingTop: 16,
+              paddingBottom: 16,
+              position: "absolute",
+              top: -10,
+            },
+          ]}
+        >
+          <View style={styles.fieldNameContainer}>
+            <Text style={styles.fieldNameTxT}>Order ID</Text>
+          </View>
+          <View style={styles.fieldValueContainer}>
+            <Text style={styles.fieldValueTxT}>
+              {pendingOrder.orderInfo.orderID}
+            </Text>
+          </View>
+        </View>
+
+        {/*  */}
+        {/*  */}
+        <View style={[styles.fieldContainer, { paddingTop: 50 }]}>
+          <View style={styles.fieldNameContainer}>
+            <Text style={styles.fieldNameTxT}>Address</Text>
+          </View>
+          <View style={styles.fieldValueContainer}>
+            <Text style={styles.fieldValueTxT}>
+              {pendingOrder.orderInfo.address}
+              {/* {item.orderInfo.created.slice(0, 10)} */}
+
+              {/* {item.orderInfo.created} */}
+            </Text>
+          </View>
+        </View>
+        {/*  */}
+        {/*  */}
+        <View style={[styles.fieldContainer]}>
+          <View style={styles.fieldNameContainer}>
+            <Text style={styles.fieldNameTxT}>Pickup Date</Text>
+          </View>
+          <View style={styles.fieldValueContainer}>
+            <Text style={styles.fieldValueTxT}>
+              {pendingOrder.pickupInfo.date}
+              {/* {item.orderInfo.created.slice(0, 10)} */}
+
+              {/* {item.orderInfo.created} */}
+            </Text>
+          </View>
+        </View>
+        {/*  */}
+        {/*  */}
+        <View style={[styles.fieldContainer]}>
+          <View style={styles.fieldNameContainer}>
+            <Text style={styles.fieldNameTxT}>Pickup Time</Text>
+          </View>
+          <View style={styles.fieldValueContainer}>
+            <Text style={styles.fieldValueTxT}>
+              {pendingOrder.pickupInfo.time}
+              {/* {item.orderInfo.created.slice(0, 10)} */}
+              {/* {item.orderInfo.created} */}
+            </Text>
+          </View>
+        </View>
+        {/*  */}
+        <DIVIDER />
+        {/*  */}
+        <View style={[styles.fieldContainer]}>
+          <View style={styles.fieldNameContainer}>
+            <Text style={styles.fieldNameTxT}>Dropoff Date</Text>
+          </View>
+          <View style={styles.fieldValueContainer}>
+            <Text style={styles.fieldValueTxT}>
+              {pendingOrder.dropoffInfo.date}
+              {/* {item.orderInfo.created.slice(0, 10)} */}
+              {/* {item.orderInfo.created} */}
+            </Text>
+          </View>
+        </View>
+        <View style={[styles.fieldContainer]}>
+          <View style={styles.fieldNameContainer}>
+            <Text style={styles.fieldNameTxT}>Dropoff Time</Text>
+          </View>
+          <View style={styles.fieldValueContainer}>
+            <Text style={styles.fieldValueTxT}>
+              {pendingOrder.dropoffInfo.time}
+              {/* {item.orderInfo.created.slice(0, 10)} */}
+              {/* {item.orderInfo.created} */}
+            </Text>
+          </View>
+        </View>
+        {/*  */}
+        {/*  */}
+        <DIVIDER />
+        <View style={[styles.fieldContainer]}>
+          <View style={styles.fieldNameContainer}>
+            <Text style={styles.fieldNameTxT}>Weight</Text>
+          </View>
+          <View style={styles.fieldValueContainer}>
+            <Text style={styles.fieldValueTxT}>
+              {pendingOrder.orderInfo.weight}
+              {/* {item.orderInfo.created.slice(0, 10)} */}
+              {/* {item.orderInfo.created} */}
+            </Text>
+          </View>
+        </View>
+        <View style={[styles.fieldContainer]}>
+          <View style={styles.fieldNameContainer}>
+            <Text style={styles.fieldNameTxT}>Price</Text>
+          </View>
+          <View style={styles.fieldValueContainer}>
+            <Text style={styles.fieldValueTxT}>
+              {pendingOrder.orderInfo.cost == -1
+                ? "TBD"
+                : pendingOrder.orderInfo.cost}
+              {/* {item.orderInfo.created.slice(0, 10)} */}
+              {/* {item.orderInfo.created} */}
+            </Text>
+          </View>
+        </View>
+      </Container>
+
+      <View style={{ alignItems: "center", justifyContent: "center" }}>
+        {pendingOrder.orderInfo.status == 3 ? (
+          <BUTTON
+            text="SET DROPOFF"
+            style={{ backgroundColor: "#ffb600" }}
+            onPress={() => {
+              setUserModalView(!userModalView);
+            }}
+          />
+        ) : null}
+
+        <TimeModal
+          title="Select User Type"
+          setCardTypeHelper={showModalUser}
+          showModal={showModalUser}
+          modalView={userModalView}
+        >
+          <Text style={[FIELD_NAME_TEXT]}>
+            What day would you like your laundry picked up?
+          </Text>
+          <View style={styles.container_dates}>
+            <TouchableOpacity
+              style={[
+                styles.container_date,
+                {
+                  backgroundColor: pickUpDate.date == DATE ? "#01c9e2" : "grey",
+                },
+              ]}
+              onPress={() =>
+                setDay({
+                  day: getDayValueFromNumber(DAY_NUMBER),
+                  month: MONTH,
+                  date: DATE,
+                })
+              }
+            >
+              <Text
+                style={{
+                  fontWeight: "bold",
+                  color: pickUpDate.date == DATE ? "white" : "black",
+                  // paddingLeft:10,
+                }}
+              >
+                Today:
+              </Text>
+              <Text
+                style={{
+                  fontWeight: "bold",
+                  color: pickUpDate.date == DATE ? "white" : "black",
+                  paddingLeft: 10,
+                }}
+              >
+                {MONTH}/{DATE}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() =>
+                setDay({
+                  day: getDayValueFromNumber(DAY_NUMBER + 1),
+                  month: MONTH,
+                  date: DATE + 1,
+                })
+              }
+              style={[
+                styles.container_date,
+                {
+                  backgroundColor:
+                    pickUpDate.date == DATE + 1 ? "#01c9e2" : "grey",
+                },
+              ]}
+            >
+              <Text
+                style={{
+                  fontWeight: "bold",
+                  color: pickUpDate.date == DATE + 1 ? "white" : "black",
+                }}
+              >
+                Tomorrow:
+              </Text>
+              <Text
+                style={{
+                  fontWeight: "bold",
+                  color: pickUpDate.date == DATE + 1 ? "white" : "black",
+                }}
+              >
+                {MONTH}/{DATE + 1}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <Text style={[FIELD_NAME_TEXT]}>
+            What time would you like your laundry to be picked up?
+          </Text>
+
+          <DateTimePicker
+            testID="dateTimePicker"
+            value={date}
+            mode={"time"}
+            is24Hour={false}
+            display="default"
+            onChange={onTimeChange}
+          />
+          <Text
+            style={{
+              color: displayTime.allowed ? "black" : "red",
+            }}
+          >
+            Monday through Friday from 10 am to 7 pm. There must be at least 1
+            hour difference between the order time and current time.
+          </Text>
+          {displayTime.allowed ? (
+            <BUTTON
+              text="CONFIRM"
+              style={{ backgroundColor: "#ffb600" }}
+              onPress={() => {
+                setUserModalView(!userModalView);
+              }}
+            />
+          ) : null}
+
+          {/* here  handleWasherReceived */}
+        </TimeModal>
+
+        <BUTTON
+          text="CANCEL"
+          style={{ backgroundColor: "#5bcae2" }}
+          onPress={() => {
+            setUserModalView(!userModalView);
+          }}
+        />
+      </View>
+    </SafeAreaView>
   );
 };
 
@@ -409,6 +856,37 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     width: WIDTH * 0.4,
     ...SHADOW,
+  },
+  fieldValueTxT: {
+    fontSize: 12,
+    fontWeight: "bold",
+    paddingRight: 10,
+  },
+  fieldNameContainer: {
+    width: "35%",
+  },
+  fieldNameTxT: {
+    fontSize: 15,
+    fontWeight: "bold",
+    paddingLeft: 10,
+  },
+  fieldValueContainer: {
+    width: "65%",
+    flexDirection: "row",
+    justifyContent: "flex-end",
+  },
+  fieldContainer: {
+    flexDirection: "row",
+    marginBottom: 5,
+    marginTop: 5,
+  },
+  container_dates: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    // backgroundColor:'red',
+    // padding:100,
+    // borderRadius: 20,
   },
 });
 

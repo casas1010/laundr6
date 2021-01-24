@@ -575,13 +575,7 @@ const NewOrderScreen = (props) => {
 
   const flow_Payment_Subscription = () => {
     // props.subscription.plan = "Family";
-    console.log("Delete me");
-    console.log("Delete me");
-    console.log("Delete me");
-    console.log("Delete me");
-    console.log("Delete me");
-    console.log("Delete me");
-    console.log("Delete me");
+
 
     // function sets the price equation to use to calculate
     // diagram: https://app.diagrams.net/#G11m5tUWMSwZDSU1_owxTNgF6aeeL_R0VK
@@ -1154,6 +1148,8 @@ const NewOrderScreen = (props) => {
               </View>
             </TouchableOpacity>
           </View>
+
+
           <TimeModal
             title="Select User Type"
             setCardTypeHelper={showModalUser}
@@ -1181,6 +1177,8 @@ const NewOrderScreen = (props) => {
               hour difference between the order time and current time.
             </Text>
           </TimeModal>
+     
+     
           <Text>
             Monday through Friday from 10 am to 7 pm. There must be at least 1
             hour difference between the order time and current time.

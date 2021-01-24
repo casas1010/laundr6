@@ -142,14 +142,12 @@ const SearchScreen = (props) => {
           orderID,
         }
       );
-
       if (response.data.success) {
         console.log("success");
         fetchData();
-        
-      } else {   
-        console.log('response.data.message: ',response.data.message)
-        alert(response.data.message)
+      } else {
+        console.log("response.data.message: ", response.data.message);
+        alert(response.data.message);
       }
     } catch (error) {
       console.log("accepting order", error);
@@ -327,6 +325,19 @@ const SearchScreen = (props) => {
                   {/*  */}
                   {/*  */}
                   {/*  */}
+                  <View style={[styles.fieldContainer]}>
+                    <View style={styles.fieldNameContainer}>
+                      <Text style={styles.fieldNameTxT}>Pickup note</Text>
+                    </View>
+                    <View style={styles.fieldValueContainer}>
+                      <Text style={styles.fieldValueTxT}>
+                        {`${item.pickupInfo.prefs}`}
+                      </Text>
+                    </View>
+                  </View>
+                  {/*  */}
+                  {/*  */}
+
                   <DIVIDER />
                   {/*  */}
                   {/*  */}
@@ -342,7 +353,7 @@ const SearchScreen = (props) => {
                   </View>
                   {/*  */}
                   {/*  */}
-                  <View style={[styles.fieldContainer]}>
+                  {/* <View style={[styles.fieldContainer]}>
                     <View style={styles.fieldNameContainer}>
                       <Text style={styles.fieldNameTxT}>Weight</Text>
                     </View>
@@ -351,13 +362,13 @@ const SearchScreen = (props) => {
                         {`${item.dropoffInfo.weight}`}
                       </Text>
                     </View>
-                  </View>
+                  </View> */}
                   {/*  */}
                   {/*  */}
                   <DIVIDER />
                   {/*  */}
                   {/*  */}
-                  <View style={[styles.fieldContainer]}>
+                  {/* <View style={[styles.fieldContainer]}>
                     <View style={styles.fieldNameContainer}>
                       <Text style={styles.fieldNameTxT}>Drop off Date</Text>
                     </View>
@@ -366,10 +377,10 @@ const SearchScreen = (props) => {
                         {`${item.dropoffInfo.date}`}
                       </Text>
                     </View>
-                  </View>
+                  </View> */}
                   {/*  */}
                   {/*  */}
-                  <View style={[styles.fieldContainer]}>
+                  {/* <View style={[styles.fieldContainer]}>
                     <View style={styles.fieldNameContainer}>
                       <Text style={styles.fieldNameTxT}>Drop off Time</Text>
                     </View>
@@ -378,7 +389,7 @@ const SearchScreen = (props) => {
                         {`${item.dropoffInfo.time}`}
                       </Text>
                     </View>
-                  </View>
+                  </View> */}
                   {/*  */}
                   {/*  */}
                   <View style={[styles.fieldContainer]}>
@@ -420,7 +431,7 @@ const SearchScreen = (props) => {
                   {/*  */}
                   {/*  */}
 
-                  {displayPreferences(item.washerInfo)}
+                  {/* {displayPreferences(item.washerInfo)} */}
                   {/*  */}
                   {/*  */}
                   <DIVIDER />
